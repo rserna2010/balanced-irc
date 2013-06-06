@@ -33,33 +33,35 @@ var file_commands = {};
 
 var admin_commands = {
     "add-admin": function(msg, reply) {
-	if(brain.admins.indexOf(msg[1]) != -1) {
-	    reply("Admin already on the list");
+	if(brain.admins.indexOf(msg[0]) != -1) {
+	    reply(true, "Admin already on the list");
 	}
+	brain.admins.push(msg[0]);
     },
     "delete-admin": function(msg, reply) {
-	if(msg[1] == config.admin_super) {
-	    reply("Can not delete the super admin");
+	if(msg[0] == config.admin_super) {
+	    reply(true, "Can not delete the super admin");
 	    return;
 	}
-	var index = brain.admins.indexOf(msg[1]);
+	var index = brain.admins.indexOf(msg[0]);
 	if(index == -1) {
-	    reply("Admin not found");
+	    reply(true, "Admin not found");
 	}else{
 	    brain.admins.splice(index, 1);
-	    reply("admin deleted");
+	    reply(true, "admin deleted");
 	}
     },
     "list-files": function (msg, reply) {
-	reply(scripts_names.join(", "));
+	reply(true, scripts_names.join(", "));
     },
     "reload-file": function(msg, reply) {
-	require.cache = {}; // make sure we are reloading the cache
-	reply(load_command(msg[0]) ? msg[0] + " was reloaded" : msg[0] + " failed to reload");
+	//require.cache = {}; // make sure we are reloading the cache
+	delete_require_cache();
+	reply(true, load_command(msg[0]) ? msg[0] + " was reloaded" : msg[0] + " failed to reload");
     },
     "reload-all": function(msg, reply) {
 	load_commands();
-	reply("reloading all commands");
+	reply(true, "reloading all commands");
     }
 };
 
@@ -96,7 +98,8 @@ function load_action(module_name) {
 	},
 	msg: function(who, msg) {
 	    client.say(who, msg);
-	}
+	},
+	base_dir: __dirname
 
     };
 }
@@ -162,19 +165,30 @@ function load_command (name) {
 	return true;
     }catch(e) {
 	console.error("Failed to load", name, e);
+	client && client.say(config.admin_super, "Failed to load module "+name);
 	return false;
     }
 }
 
 function load_commands () {
-    require.cache = {}; // make sure we are reloading the cache
+    //require.cache = {}; // make sure we are reloading the cache
+    scripts_names = [];
+    delete_require_cache();
+    config = require('./config');
     fs.readdir(__dirname + '/scripts/', function(err, results) {
 	for(var a =0; a < results.length; a++) {
-	    load_command(results[a].split('.')[0]);
+	    var name = results[a].split('.')[0];
+	    if(results[a].indexOf("#") == -1 && results[a].indexOf("~") == -1)
+		load_command(name);
 	}
     });
 }
 
+function delete_require_cache () {
+    for(var name in require.cache) {
+	delete require.cache[name];
+    }
+}
 
 load_commands();
 
@@ -188,21 +202,29 @@ function start_irc () {
     client.on('error', console.error);
 
     client.on('message', function(nick, from, message, info) {
-	console.log("message", message);
-	if(message.indexOf(config.nick) != -1) {
-	    console.log("trying to run a command");
-	    if(!run_command(from, message, info)) {
+	try {
+	    console.log("message:", message);//, arguments);
+	    if(message.indexOf(config.nick) != -1) {
+		if(!run_command(from, message, info)) {
+		    on_message(from, message, info);
+		}
+	    }else{
 		on_message(from, message, info);
 	    }
-	}else{
-	    on_message(from, message, info);
+	} catch(e) {
+	    console.error(e);
+	    client.say(config.admin_super, "Failed on cmd: "+ message);
 	}
-	console.log("message:", message, arguments);
     });
 
     client.on('pm', function(nick, message, info) {
-	run_command(nick, message, info, true);
-	console.log("pm:", arguments);
+	try {
+	    console.log("pm: <"+nick+"> "+message);
+    	    run_command(nick, message, info, true);
+	}catch(e) {
+	    console.error(e);
+	    client.say(config.admin_super, "Failed on pm cmd: "+message);
+	}
     });
 
 }
