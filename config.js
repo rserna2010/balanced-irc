@@ -15,3 +15,6 @@ exports.save_inveral = 5 * 1000; // 5 seconds
 // config for scripts
 
 exports.faq_path = [ "resources/balanced-docs/faq/Developer Support/Developer FAQ" ];
+
+
+exports.api_path = [ "resources/balanced-docs/spec/src/resources" ];

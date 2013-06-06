@@ -147,6 +147,7 @@ function on_message(from, msg, info) {
 	}
 	client.say(from, msg);
     }
+    msg = msg.split(' ');
     for(var name in message_actions) {
 	for(var a=0; a < message_actions[name].length; a++) {
 	    message_actions[name][a](msg, reply, info);
@@ -218,6 +219,7 @@ function start_irc () {
     });
 
     client.on('pm', function(nick, message, info) {
+	if(nick == config.nick) return; // yes you can pm yourself
 	try {
 	    console.log("pm: <"+nick+"> "+message);
     	    run_command(nick, message, info, true);

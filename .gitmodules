@@ -1,3 +1,6 @@
 [submodule "resources/balanced-docs"]
 	path = resources/balanced-docs
 	url = https://github.com/balanced/balanced-docs.git
+[submodule "resources/balanced-api"]
+	path = resources/balanced-api
+	url = https://github.com/balanced/balanced-api.git

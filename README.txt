@@ -25,3 +25,4 @@ config notes:
 
 TODO:
 	make the readme nice
+	Maybe use MemoServ for sending the error messages incase the admin is offline
