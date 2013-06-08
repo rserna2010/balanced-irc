@@ -42,6 +42,8 @@ module.exports = function (act) {
 		return;
 	    }
 	}
+	console.log("did not find faq");
+	reply(true, "did not find a faq with those terms");
     });
 };
 
