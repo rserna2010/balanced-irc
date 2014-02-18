@@ -1,10 +1,10 @@
 exports.server = "irc.freenode.net";
-exports.nick = "mfl-bot";
+exports.nick = "richie-bot";
 
 // add more admins by running
-exports.admin_super = "googol"; // gets a pm when there is an error
+exports.admin_super = "ras__"; // gets a pm when there is an error
 
-exports.channels = [ "#matthewfl", "##balanced", "#balanced" ];
+exports.channels = [ "#rserna2010", "##rserna2010" ];
 
 
 exports.save_file = "/tmp/brain-dump.json"
